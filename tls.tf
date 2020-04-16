@@ -181,3 +181,70 @@ resource "tls_locally_signed_cert" "scheduler" {
   allowed_uses          = ["cert_signing", "key_encipherment", "server_auth", "client_auth"]
   validity_period_hours = 8760
 }
+
+# ==========
+# API Server
+# ==========
+
+resource "tls_private_key" "api" {
+  algorithm = "RSA"
+  rsa_bits  = 2048
+}
+
+resource "tls_cert_request" "api" {
+  key_algorithm   = "RSA"
+  private_key_pem = tls_private_key.api.private_key_pem
+  dns_names       = [
+    "kubernetes",
+    "kubernetes.default",
+    "kubernetes.default.svc",
+    "kubernetes.default.svc.cluster",
+    "kubernetes.svc.cluster.local",
+  ]
+  subject {
+    common_name         = "kubernetes"
+    country             = "US"
+    locality            = "Washington"
+    organization        = "Kubernetes"
+    organizational_unit = "Kubernetes the Hard Way"
+  }
+}
+
+resource "tls_locally_signed_cert" "api" {
+  cert_request_pem      = tls_cert_request.api.cert_request_pem
+  ca_key_algorithm      = "RSA"
+  ca_private_key_pem    = tls_private_key.ca.private_key_pem
+  ca_cert_pem           = tls_self_signed_cert.ca.cert_pem
+  allowed_uses          = ["cert_signing", "key_encipherment", "server_auth", "client_auth"]
+  validity_period_hours = 8760
+}
+
+# ==========
+# Service Account
+# ==========
+
+resource "tls_private_key" "service_account" {
+  algorithm = "RSA"
+  rsa_bits  = 2048
+}
+
+resource "tls_cert_request" "service_account" {
+  key_algorithm   = "RSA"
+  private_key_pem = tls_private_key.service_account.private_key_pem
+  subject {
+    common_name         = "service-accounts"
+    country             = "US"
+    locality            = "Washington"
+    organization        = "Kubernetes"
+    organizational_unit = "Kubernetes the Hard Way"
+  }
+}
+
+resource "tls_locally_signed_cert" "service_account" {
+  cert_request_pem      = tls_cert_request.service_account.cert_request_pem
+  ca_key_algorithm      = "RSA"
+  ca_private_key_pem    = tls_private_key.ca.private_key_pem
+  ca_cert_pem           = tls_self_signed_cert.ca.cert_pem
+  allowed_uses          = ["cert_signing", "key_encipherment", "server_auth", "client_auth"]
+  validity_period_hours = 8760
+}
