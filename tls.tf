@@ -9,7 +9,7 @@ resource "tls_private_key" "ca" {
 
 resource "tls_self_signed_cert" "ca" {
   key_algorithm   = "RSA"
-  private_key_pem = "${tls_private_key.ca.private_key_pem}"
+  private_key_pem = tls_private_key.ca.private_key_pem
 
   subject {
     common_name         = "Kubernetes"
@@ -35,7 +35,7 @@ resource "tls_private_key" "admin" {
 
 resource "tls_cert_request" "admin" {
   key_algorithm   = "RSA"
-  private_key_pem = "${tls_private_key.admin.private_key_pem}"
+  private_key_pem = tls_private_key.admin.private_key_pem
   subject {
     common_name         = "admin"
     country             = "US"
@@ -46,10 +46,10 @@ resource "tls_cert_request" "admin" {
 }
 
 resource "tls_locally_signed_cert" "admin" {
-  cert_request_pem      = "${tls_cert_request.admin.cert_request_pem}"
+  cert_request_pem      = tls_cert_request.admin.cert_request_pem
   ca_key_algorithm      = "RSA"
-  ca_private_key_pem    = "${tls_private_key.ca.private_key_pem}"
-  ca_cert_pem           = "${tls_self_signed_cert.ca.cert_pem}"
+  ca_private_key_pem    = tls_private_key.ca.private_key_pem
+  ca_cert_pem           = tls_self_signed_cert.ca.cert_pem
   allowed_uses          = ["cert_signing", "key_encipherment", "server_auth", "client_auth"]
   validity_period_hours = 8760
 }
